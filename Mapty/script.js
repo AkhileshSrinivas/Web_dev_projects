@@ -10,7 +10,7 @@ class Workout {
     this.distance = distance; // in km
     this.duration = duration; // in hr
   }
-  //   Running on April 14
+
   _setDescription() {
     const months = [
       'January',
@@ -31,6 +31,7 @@ class Workout {
     } ${this.date.getDate()}`;
   }
 }
+
 class Running extends Workout {
   type = 'running';
   constructor(coords, distance, duration, cadence) {
@@ -39,6 +40,7 @@ class Running extends Workout {
     this.calcPace();
     this._setDescription();
   }
+
   calcPace() {
     // min/km
     this.pace = this.duration / this.distance;
@@ -51,9 +53,11 @@ class Cycling extends Workout {
   constructor(coords, distance, duration, elevationGain) {
     super(coords, distance, duration);
     this.elevationGain = elevationGain;
+    // this.type = 'cycling';
     this.calcSpeed();
     this._setDescription();
   }
+
   calcSpeed() {
     // km/h
     this.speed = this.distance / (this.duration / 60);
@@ -67,7 +71,6 @@ class Cycling extends Workout {
 
 ////////////////////////////////////////////////////////
 //APPLICATION ARCHITECTURE
-
 const form = document.querySelector('.form');
 const containerWorkouts = document.querySelector('.workouts');
 const inputType = document.querySelector('.form__input--type');
@@ -84,6 +87,9 @@ class App {
   constructor() {
     // Get user's position
     this._getPosition();
+
+    // Get data from local storage
+    this._getLocalStorage();
 
     // Attach event handlers
     form.addEventListener('submit', this._newWorkout.bind(this));
@@ -106,7 +112,8 @@ class App {
     const { latitude } = position.coords;
     const { longitude } = position.coords;
     console.log(latitude, longitude);
-    console.log(`https://www.google.com/maps/@${latitude},${longitude}`);
+    // console.log(`https://www.google.com/maps/@${latitude},${longitude}`);
+
     const coords = [latitude, longitude];
     this.#map = L.map('map').setView(coords, this.#mapZoomLevel);
     // console.log(map);
@@ -118,12 +125,18 @@ class App {
 
     // Handling clicks on map
     this.#map.on('click', this._showForm.bind(this));
+
+    this.#workouts.forEach(work => {
+      this._renderWorkoutMarker(work);
+    });
   }
+
   _showForm(mapEv) {
     this.#mapEvent = mapEv;
     form.classList.remove('hidden');
     inputDistance.focus();
   }
+
   _hideForm() {
     // Empty inputs
     inputDistance.value = inputDuration.value = inputCadence.value = inputElevation.value =
@@ -138,6 +151,7 @@ class App {
     inputElevation.closest('.form__row').classList.toggle('form__row--hidden');
     inputCadence.closest('.form__row').classList.toggle('form__row--hidden');
   }
+
   _newWorkout(e) {
     e.preventDefault();
 
@@ -157,6 +171,9 @@ class App {
       const cadence = +inputCadence.value;
       // Check if data is valid
       if (
+        // !Number.isFinite(distance) ||
+        // !Number.isFinite(duration) ||
+        // !Number.isFinite(cadence)
         !validInputs(distance, duration, cadence) ||
         !allpositive(distance, duration, cadence)
       )
@@ -167,6 +184,7 @@ class App {
     // If workout cycling, create cycling object
     if (type === 'cycling') {
       const elevation = +inputElevation.value;
+
       // Check if data is valid
       if (
         !validInputs(distance, duration, elevation) ||
@@ -187,9 +205,14 @@ class App {
 
     // Render workout on list
     this._renderWorkout(workout);
+
     // Hide the form and Clear input fields
     this._hideForm();
+
+    // Set local storage to all workouts
+    this._setLocalStorage();
   }
+
   _renderWorkoutMarker(workout) {
     L.marker(workout.coords)
       .addTo(this.#map)
@@ -279,6 +302,27 @@ class App {
 
     // using the public interface
     // workout.click();
+  }
+
+  _setLocalStorage() {
+    localStorage.setItem('workouts', JSON.stringify(this.#workouts));
+  }
+
+  _getLocalStorage() {
+    const data = JSON.parse(localStorage.getItem('workouts'));
+
+    if (!data) return;
+
+    this.#workouts = data;
+
+    this.#workouts.forEach(work => {
+      this._renderWorkout(work);
+    });
+  }
+
+  reset() {
+    localStorage.removeItem('workouts');
+    location.reload();
   }
 }
 
