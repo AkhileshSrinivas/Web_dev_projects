@@ -3,8 +3,6 @@ import { Fraction } from 'fractional';
 // import icons from '../img/icons.svg'  // Parcel 1
 import icons from 'url:../../img/icons.svg'; //Parcel 2
 
-console.log(Fraction);
-
 class RecipeView {
   #parentElement = document.querySelector('.recipe');
   #data;
