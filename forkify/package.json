@@ -2,12 +2,12 @@
   "name": "forkify",
   "version": "1.0.0",
   "description": "Recipe application",
-  "main": "index.html",
+  "default": "index.html",
   "scripts": {
     "start": "parcel index.html",
-    "build": "parcel build index.html"
+    "build": "parcel build index.html --dist-dir ./dist"
   },
-  "author": "Akhilesh",
+  "author": "Akhilesh S",
   "license": "ISC",
   "devDependencies": {
     "parcel": "2.0.0-beta.1",
